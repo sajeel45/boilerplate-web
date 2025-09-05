@@ -1,57 +1,28 @@
 import { toast } from "react-toastify";
 import { setError, setErrorForReload } from "./errors/handleErrorsAndPayloads";
-import type { AnyAction, Dispatch } from "redux";
 
-// Define a more specific error type
-interface ErrorResponse {
-  code?: string;
-  response?: {
-    status?: number;
-    data?: {
-      errors?: Record<string, string>;
-      message?: string;
-      status?: string | number;
-    };
-  };
-  reason?: string;
-  [key: string]: unknown;
-}
-
-export const detectError = (
-  error: ErrorResponse,
-  dispatch: Dispatch<AnyAction>,
-  rejectWithValue?: (error: ErrorResponse) => unknown
-): unknown => {
-  if (error.code === "ERR_NETWORK" && error.response?.status === 0) {
-    dispatch(
-      setErrorForReload({
-        errorCode: 0,
-        errorMessage: "Server is unavailable",
-      })
-    );
-    return rejectWithValue ? rejectWithValue(error) : undefined;
+export const detectError = (error, dispatch, rejectWithValue) => {
+  if (error.code == "ERR_NETWORK" && error.response?.status == 0) {
+    dispatch(setErrorForReload({
+      errorCode: 0,
+      errorMessage: "Server is unavailable",
+    }))
+    return rejectWithValue(error);
   }
-  if (typeof error === "object" && error["reason"])
-    return toast.error(error["reason"]);
+  if(typeof error == "object" && error['reason']) return toast.error(error['reason'])
   if (error?.response) {
-    if (error.response?.status === 422) {
+    if (error.response?.status == 422) {
       if (error.response?.data?.errors) {
-        const errors =
-          error.response && error.response.data && error.response.data.errors;
-        if (errors) {
-          Object.keys(errors).forEach((item) =>
-            dispatch(
-              setError({
-                errorCode: error.response
-                  ? error.response.status ?? error.response.data?.status
-                  : undefined,
-                errorMessage: `${item} : ${errors[item]}`,
-              })
-            )
-          );
-        }
+        Object.keys(error.response?.data?.errors).map((item) =>
+          dispatch(
+            setError({
+              errorCode: error.response.status ?? error?.response?.data?.status,
+              errorMessage: `${item} : ${error.response?.data?.errors[item]}`,
+            })
+          )
+        );
       }
-    } else {
+    } else
       dispatch(
         setError({
           errorCode: error.response.status ?? error?.response?.data?.status,
@@ -59,23 +30,76 @@ export const detectError = (
             error?.response?.data?.message || error?.response?.data?.status,
         })
       );
-    }
   }
   if (rejectWithValue) {
     return rejectWithValue(error);
   }
 };
 
-export function spreadObjValuesNotNull<
-  T extends Record<string, unknown> | null | undefined
->(ob: T): T {
+export const spreadObjValuesNotNull = (ob) => {
   if (typeof ob === "object" && ob) {
-    const tempObj: Record<string, unknown> = {};
+    const tempObj = {};
     Object.keys(ob).forEach((key) => {
-      tempObj[key] = (ob as Record<string, unknown>)[key] ?? "";
+      tempObj[key] = ob[key] ?? "";
     });
-    return tempObj as T;
+    return tempObj;
   } else {
     return ob;
   }
+};
+
+//convert search params to opject
+export function paramsToObject(entries) {
+  const result = {};
+  for (const [key, value] of entries) {
+    result[key] = value;
+  }
+  return result;
 }
+
+export const mapAlterString = (_array, string) => {
+  if (Array.isArray(_array) && _array.length > 0) {
+    return _array.map((item) => item[string]);
+  } else {
+    return string;
+  }
+};
+export const subStringNumber = (stirng, numbers) => {
+  if (typeof stirng == "string" && stirng.length > numbers) {
+    return stirng.substring(1, numbers) + "...";
+  } else {
+    return stirng;
+  }
+};
+// handle error leading and server params
+function handleLoadingErrorParamsForAsycThunk(state, { meta, payload, type }) {
+  const action = type.split("/");
+  if (meta?.arg && type.endsWith("/pending")) {
+    state.paramsForThunk[action[1]] = meta?.arg;
+  }
+
+  if (type.endsWith("/rejected") && payload?.response) {
+    state.errorMessages[action[1]] =
+      payload?.response?.data?.message ??
+      payload?.response?.message ??
+      "Something went wrong";
+    state.errorCodes[action[1]] =
+      payload?.response?.status ?? 500;
+  }
+  state.errors[action[1]] = type.endsWith("/rejected");
+  state.loadings[action[1]] = type.endsWith("/pending");
+}
+export { handleLoadingErrorParamsForAsycThunk };
+
+
+export const catchAsync = (fn) => (_, api) => {
+  return Promise.resolve(fn(_,api)).catch((error) => {
+    if(_?.callBackOnError && typeof _?.callBackOnError == "function") _?.callBackOnError(error)
+    return detectError(error, api?.dispatch, api?.rejectWithValue)
+    }
+    );
+  };
+export const reduxToolKitCaseBuilder = (cases) => {
+  return cases.flatMap((el) => [el.pending, el.fulfilled, el.rejected]);
+};
+

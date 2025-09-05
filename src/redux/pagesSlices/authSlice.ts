@@ -113,7 +113,7 @@ export const logoutFromAllDevicesAsyncThunk = createAsyncThunk(
 // user register With Credentials
 export const userRegisterAsyncThunk = createAsyncThunk(
   "auth/userRegisterAsyncThunk",
-  catchAsync(async ({ data, router, onError = () => { } }) => {
+  catchAsync(async ({ data, router, callBack }) => {
     const response = await ApiRequests.register(data);
     console.log("response", response);
     if (response) {
@@ -121,11 +121,12 @@ export const userRegisterAsyncThunk = createAsyncThunk(
         toast.success("Registered Successfully!", {
           autoClose: 2000,
         });
-        router("/dashboard");
+        router("/");
       } else {
         toast.error(response.error);
       }
     }
+    if (callBack) callBack();
     return response?.data;
   })
 );

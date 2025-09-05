@@ -91,40 +91,7 @@ export const getJobDetailsAsyncThunk = createAsyncThunk(
     return response?.data;
   })
 );
-export const applyJobAsyncThunk = createAsyncThunk(
-  "job/applyJobAsyncThunk",
-  catchAsync(async ({ id, data, callBack = () => { } }, { dispatch, rejectWithValue }) => {
-    try {
-      const response = await ApiRequests.applyJob(id, data);
-      if (response?.status === 202 && response?.data?.productIdConflict == true) {
-        dispatch(
-          handleModel({
-            model: "infoModal",
-            state: true,
-            args: {
-              description: <>
-                Thanks for applying! Please note that you’re already hired on another job for this product ID. To proceed with any new job, you’ll need to complete the previous one first.
-                <br />Once it’s marked complete, feel free to reapply or reach out to us for the next opportunity.
-                <br />Thanks for your cooperation!
-              </>
-            },
-          })
-        );
-        return
-      }
-      toast.success("Job Applied Successfully!");
-      if (typeof callBack === "function") callBack(response?.data);
-      return response?.data;
-    } catch (error) {
-      console.error("Job Application Error:", error);
 
-      return rejectWithValue({
-        status: error.status,
-        message: error?.response?.data?.message || "Something went wrong!",
-      });
-    }
-  })
-);
 
 export const verifyJobInvitationAsyncThunk = createAsyncThunk(
   "job/verifyJobInvitation",
@@ -319,9 +286,7 @@ const jobSlice = createSlice({
       .addCase(getJobDetailsAsyncThunk.fulfilled, (state, action) => {
         state.jobDetails = action.payload;
       })
-      .addCase(applyJobAsyncThunk.fulfilled, (state, action) => {
-        state.appliedJob = action.payload;
-      })
+     
       // im using addMatcher to manage the asyncthunksMehtod actions like fullfilled,pending,rejected and also to manage the errors loading and error messages and async params
       .addMatcher(
         // isAsyncThunk will run when the action is an asyncthunk exists from giver asycntthunks
@@ -332,7 +297,6 @@ const jobSlice = createSlice({
             getJobDetailsAsyncThunk,
             getMyJobsAsyncThunk,
             // getMyJobRelatedAsyncThunk,
-            applyJobAsyncThunk,
             getAvailableJobsByBrandAsyncThunk,
             getRecommendedJobsAsyncThunk,
             getAvailableJobsAsyncThunk,

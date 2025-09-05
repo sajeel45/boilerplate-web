@@ -1,6 +1,6 @@
-import { APIurls } from "../constants.js";
-import apiService from ".";
-import multipart from "./multipart.js";
+import { APIurls } from "../constants.ts";
+import apiService from "./index.ts";
+import multipart from "./multipart.ts";
 
 export const ApiRequests = {
   //user Authentication

@@ -3,26 +3,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   modelState: {
-    createSection: false,
-    contentModel: false,
-    confirmation: false,
-    CreateComponent: false,
-    RightSidebarBase: false,
-    EdifyResultModel: false,
-    ExportUserModel: false,
-    LeftSidebarBase: false,
-    openImportFailUserListModel: false,
+    addBookModal: false,
   },
   modelArgs: {
-    createSection: {},
-    contentModel: {},
-    confirmation: {},
-    RightSidebarBase: {},
-    CreateComponent: {},
-    EdifyResultModel: {},
-    ExportUserModel: {},
-    LeftSidebarBase: {},
-    openImportFailUserListModel : {},
+    addBookModal: {},
   },
   errorCode: null,
   models: {},
