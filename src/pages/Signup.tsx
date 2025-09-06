@@ -3,6 +3,9 @@ import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
 import { userRegisterAsyncThunk } from "../redux/pagesSlices/authSlice";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
   // validation schema
@@ -16,17 +19,22 @@ export default function Signup() {
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
   });
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const loading = useSelector((s)=>s.auth.loadings?.userRegisterAsyncThunk)
   // form submission handler
-  const handleSubmit = () => {
-    dispatch(
+  const handleSubmit = async  () => {
+    const response = await dispatch(
       userRegisterAsyncThunk({
         data: { ...formik.values },
         callBack: () => {
           toast.success("Registered Successfully!");
+          navigate("/");
         },
       })
     );
+    console.log("response", response);
+    
   };
   //   formik hook
   const formik = useFormik({
@@ -105,7 +113,7 @@ export default function Signup() {
             ) : null}
             <div className="sign-up-button">
               <button type="submit" className="btn-style registration">
-                Sign Up
+               {loading ? <Spinner size="sm"/> : "Sign up"} 
               </button>
             </div>
           </form>

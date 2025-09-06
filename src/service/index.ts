@@ -103,7 +103,7 @@ apiService.interceptors.response.use(
           sessionStorage.clear();
           clearCookies();
           if (!window.location.pathname.startsWith("/new-password")) {
-            window.location.href = "/creator/sign-in";
+            window.location.href = "/login";
           }
           return Promise.reject(error);
         }
@@ -140,7 +140,7 @@ apiService.interceptors.response.use(
           sessionStorage.clear();
           clearCookies();
           if (!window.location.pathname.startsWith("/new-password")) {
-            window.location.href = "/creator/sign-in";
+            window.location.href = "/login";
           }
         }, 100);
         

@@ -10,30 +10,18 @@ import { toast } from "react-toastify";
 // user Login With Credentials
 export const userLoginAsyncThunk = createAsyncThunk(
   "auth/userLoginAsyncThunk",
-  catchAsync(async ({ email, password, router }, { dispatch }) => {
+  catchAsync(async ({ email, password }, { dispatch }) => {
     const response = await ApiRequests.login({
       email,
       password,
-      role: "creator",
     });
     if (response) {
       if (response?.status === 200) {
         toast.success("Success! You’re now securely logged in. Welcome back!", {
           autoClose: 2000,
         });
-        if (response?.data?.user?.role === "brand") {
-          router("/dashboard");
-        } else if (response?.data?.user?.role === "creator") {
-          router("/dashboard");
-        } else if (response?.data?.user?.role === "admin") {
-          router("/dashboard");
-        } else {
-          router("/dashboard");
-        }
-      } else {
-        router("/sign-in");
-        toast.error(response.error);
-      }
+        window.location.href = "/";
+      } 
     }
     return response?.data;
   })
@@ -46,21 +34,15 @@ export const authenticateAsyncThunk = createAsyncThunk(
     if (!token || token === "null") {
       return null;
     }
-    let response = null
-
-    const adminId = localStorage.getItem("adminId");
-    if (adminId) {
-      response = await ApiRequests.authenticate({ adminId });
-    } else {
-      response = await ApiRequests.authenticate();
-    }
+    let response = null;
+    response = await ApiRequests.authenticate();
     return response?.data;
   })
 );
 
 export const userLogoutAsyncThunk = createAsyncThunk(
   "auth/userLogoutAsyncThunk",
-  catchAsync(async (_, { router, callBack }) => {
+  catchAsync(async (_, { callBack }) => {
     const refreshToken = localStorage.getItem("refresh-token");
     if (!refreshToken || refreshToken === "null") {
       return;
@@ -75,7 +57,7 @@ export const userLogoutAsyncThunk = createAsyncThunk(
         toast.success("LogOut Successfully!!!", {
           autoClose: 2000,
         });
-        router("/brand/sign-in");
+        window.location.href='/login'
         if (callBack) callBack();
       } else {
         toast.error(response.error);
@@ -113,15 +95,11 @@ export const logoutFromAllDevicesAsyncThunk = createAsyncThunk(
 // user register With Credentials
 export const userRegisterAsyncThunk = createAsyncThunk(
   "auth/userRegisterAsyncThunk",
-  catchAsync(async ({ data, router, callBack }) => {
+  catchAsync(async ({ data, callBack }) => {
     const response = await ApiRequests.register(data);
-    console.log("response", response);
     if (response) {
-      if (response?.status == 201) {
-        toast.success("Registered Successfully!", {
-          autoClose: 2000,
-        });
-        router("/");
+      if (response?.status === 201) {
+        toast.success("Registered Successfully!", { autoClose: 2000 });
       } else {
         toast.error(response.error);
       }
@@ -255,7 +233,7 @@ export const verifyEmailAsyncThunk = createAsyncThunk(
 
 export const verifyTokenExpiryAsyncThunk = createAsyncThunk(
   "auth/verifyTokenExpiryAsyncThunk",
-  catchAsync(async ({ }) => {
+  catchAsync(async ({}) => {
     const response = await ApiRequests.verifyTokenExpiry();
     console.log("verifyTokenExpiryAsyncThunk response", response);
     return response?.data;

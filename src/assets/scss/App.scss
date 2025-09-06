@@ -25,7 +25,8 @@
 
       input[type="text"],
       input[type="email"],
-      input[type="password"] {
+      input[type="password"],
+      select {
         padding: 0.7rem 1rem;
         border: 1.5px solid #e0e7ff;
         border-radius: 0.7rem;
@@ -38,7 +39,8 @@
 
       input[type="text"]:focus,
       input[type="email"]:focus,
-      input[type="password"]:focus {
+      input[type="password"]:focus,
+      select:focus {
         border: 1.5px solid #6366f1;
         box-shadow: 0 0 0 2px #6366f133;
       }
@@ -393,7 +395,7 @@ body {
             margin-bottom: 0.1rem;
           }
 
-          input {
+          input,select {
             padding: 0.7rem 1rem;
             border: 1.5px solid #e0e7ff;
             border-radius: 0.7rem;

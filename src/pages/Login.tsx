@@ -1,7 +1,15 @@
 import { useFormik } from "formik";
+import { useDispatch } from "react-redux";
 import * as Yup from "yup";
+import { userLoginAsyncThunk } from "../redux/pagesSlices/authSlice";
+import { useSelector } from "react-redux";
+import { Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const dispatch = useDispatch();
+  const loading = useSelector((s) => s.auth.loadings?.userLoginAsyncThunk);
+  const navigate  = useNavigate();
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid email format")
@@ -21,6 +29,14 @@ export default function Login() {
     validationSchema,
     onSubmit: handleSubmit,
   });
+  const handleLogin = () => {
+  dispatch(
+    userLoginAsyncThunk({
+      email: formik.values.email,
+      password: formik.values.password,
+    })
+  );
+};
   return (
     <div className="sign-up-page">
       <div className="sign-up-form">
@@ -58,8 +74,12 @@ export default function Login() {
               ) : null}
             </div>
             <div className="sign-up-button">
-              <button type="submit" className="btn-style registration">
-                Login
+              <button
+                onClick={handleLogin}
+                type="submit"
+                className="btn-style registration"
+              >
+                {loading ? <Spinner size="sm" /> : "Login"}
               </button>
             </div>
           </form>

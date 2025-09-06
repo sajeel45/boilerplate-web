@@ -1,13 +1,20 @@
-
-
-
 import { useDispatch } from "react-redux";
 import PaginationComponent from "../components/Pagination";
-import {handleModel} from "../redux/layoutSlices/modelSlice";
+import { handleModel } from "../redux/layoutSlices/modelSlice";
 import type { AppDispatch } from "../redux/store";
-
+import { useEffect, useState } from "react";
+import {
+  deleteBookAsyncThunk,
+  getBooksAsyncThunk,
+} from "../redux/pagesSlices/bookSlice";
+import { useSelector } from "react-redux";
+import { Spinner } from "react-bootstrap";
 export default function Homepage() {
+  const [page, setPage] = useState(1);
   const dispatch = useDispatch<AppDispatch>();
+  const data = useSelector((s) => s?.books?.books);
+  console.log("data", data);
+
   const handleAddBookModal = () => {
     dispatch(
       handleModel({
@@ -17,6 +24,25 @@ export default function Homepage() {
       })
     );
   };
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+  const loading = useSelector((s) => s?.books?.deleteBookAsyncThunk);
+  const handleDeleteBook = (bookId: string) => {
+    dispatch(
+      deleteBookAsyncThunk({
+        id: bookId,
+        callBack: () => {
+          dispatch(getBooksAsyncThunk({ page: 1 }));
+        },
+      })
+    );
+  };
+
+  useEffect(() => {
+    const params = { page };
+    dispatch(getBooksAsyncThunk(params));
+  }, [dispatch, page]);
   return (
     <div className="home-page-wrapper">
       <h1>Welcome to the Home Page</h1>
@@ -36,23 +62,30 @@ export default function Homepage() {
               <tr>
                 <th>Title</th>
                 <th>Author</th>
-                <th>Added On</th>
+                <th>Genre</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Book Title 1</td>
-                <td>Author Name 1</td>
-                <td>2023-10-01</td>
-                <td>
-                  <button onClick={handleAddBookModal} className="edit-button">Edit</button>
-                  <button className="delete-button">Delete</button>
-                </td>
-              </tr>
+              {data?.results?.map((item: any) => (
+                <tr key={item?._id || item?.id}>
+                  <td>{item?.title}</td>
+                  <td>{item?.author}</td>
+                  <td>{item?.genre}</td>
+                  <td>
+                    <button
+                      onClick={() => handleDeleteBook(item?._id || item?.id)}
+                      className="delete-button"
+                    >
+                      {" "}
+                      {loading ? <Spinner /> : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-          <PaginationComponent />
+          <PaginationComponent data={data} onPageChange={handlePageChange} />
         </div>
       </div>
     </div>
